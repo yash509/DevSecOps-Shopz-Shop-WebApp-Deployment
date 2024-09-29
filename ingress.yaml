@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pe-wa-ingress
+spec:
+  rules:
+  - host: pe-wa
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pe-wa-service
+            port:
+              number: 5000 #80
+      - path: /app
+        pathType: Prefix
+        backend:
+          service:
+            name: pe-wa-service
+            port:
+              number: 5000 #80

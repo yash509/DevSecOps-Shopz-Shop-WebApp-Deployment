@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countrybank-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countrybank
+      version: green
+  template:
+    metadata:
+      labels:
+        app: countrybank
+        version: green
+    spec:
+      containers:
+      - name: countrybank
+        image: yash5090/countrybank:green # Adjust the image tag for the green version
+        ports:
+        - containerPort: 3000
+        # env:
+        # - name: SPRING_DATASOURCE_URL
+        #   value: jdbc:mysql://mysql-service:3306/countrybankdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+        # - name: SPRING_DATASOURCE_USERNAME
+        #   value: root
+        # - name: SPRING_DATASOURCE_PASSWORD
+        #   value: Test@123
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "1000Mi"
+            cpu: "1000m"

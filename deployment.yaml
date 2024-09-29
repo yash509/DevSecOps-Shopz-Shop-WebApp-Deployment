@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pe-wa-deployment
+spec:
+  replicas: 6  # Number of desired replicas
+  selector:
+    matchLabels:
+      app: pe-wa
+  template:
+    metadata:
+      labels:
+        app: pe-wa
+    spec:
+      containers:
+      - name: pe-wa
+        image: yash5090/pe-wa:latest
+        ports:
+        - containerPort: 5000

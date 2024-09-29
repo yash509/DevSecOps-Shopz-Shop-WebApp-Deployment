@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pe-wa-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: pe-wa
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: pe-wa
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: pe-wa
