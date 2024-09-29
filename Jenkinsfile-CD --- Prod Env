@@ -1,0 +1,91 @@
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    stages {
+        stage('Checkout from Git') {                        
+            steps {                                       
+                git branch: 'main', url: 'https://github.com/yash509/DevSecOps-CountryBank-WebApp-Deployment.git'
+            }
+        }
+        
+        stage("Sanity Check") {
+            steps {
+                input "Should we ship to prod?"
+            }
+        }
+        
+        stage('Deploy to Kubernetes'){
+            steps{
+                script{
+                    //dir('K8S') {
+                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                                sh 'kubectl apply -f deployment.yaml'
+                                sh 'kubectl apply -f service.yaml'
+                                sh 'kubectl apply -f job.yaml'
+                                sh 'kubectl apply -f pv.yaml'
+                                sh 'kubectl apply -f pvc.yaml'
+                                sh 'kubectl apply -f nwp.yaml'
+                                sh 'kubectl apply -f ingress.yaml'
+                        //}
+                    }
+                }
+            }
+        }
+        
+         stage('Verify the Kubernetes Deployments') { 
+            steps { 
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') { 
+                    sh "kubectl get all "
+                    sh "kubectl get pods " 
+                    sh "kubectl get svc "
+                    sh "kubectl get ns"
+                } 
+            } 
+        } 
+        stage('Deployment Done') {
+            steps {
+                echo 'Deployed Succcessfully...'
+            }
+        }
+    }
+    
+    post { 
+        always {
+            script { 
+                def jobName = env.JOB_NAME 
+                def buildNumber = env.BUILD_NUMBER 
+                def pipelineStatus = currentBuild.result ?: 'UNKNOWN' 
+                def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red' 
+                def body = """ 
+                <html> 
+                <body> 
+                <div style="border: 4px solid ${bannerColor}; padding: 10px;"> 
+                <h2>${jobName} - Build ${buildNumber}</h2> 
+                <div style="background-color: ${bannerColor}; padding: 10px;"> 
+                <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3> 
+                </div> 
+                <p>Check the <a href="${BUILD_URL}">console output</a>.</p> 
+                </div> 
+                </body> 
+                </html> 
+            """ 
+ 
+            emailext (
+                attachLog: true,
+                subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}", 
+                body: body, 
+                to: 'clouddevopshunter@gmail.com', 
+                from: 'jenkins@example.com', 
+                replyTo: 'jenkins@example.com', 
+                mimeType: 'text/html', 
+                attachmentsPattern: 'trivy-image-report.html, trivyfs.txt, trivyimage.txt') 
+            } 
+        } 
+    }
+}
