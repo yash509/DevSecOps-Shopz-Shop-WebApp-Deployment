@@ -1,13 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pe-wa-job
+  name: webshop-job
 spec:
   template:
     spec:
       containers:
-      - name: pe-wa-job
-        image: yash5090/pe-wa:latest
+      - name: webshop-job
+        image: yash5090/webshop:latest
         ports:
-        - containerPort: 5000
+        - containerPort: 8000
       restartPolicy: OnFailure
